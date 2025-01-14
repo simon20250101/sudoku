@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数独游戏</title>
+    <style>
+        /* 与之前相同的样式 */
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        }
+        .game-container {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            position: relative;
+        }
+        h1 {
+            margin: 0 0 20px;
+            color: #333;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(9, 40px);
+            grid-gap: 2px;
+            margin: 20px 0;
+        }
+        .grid div {
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            font-size: 18px;
+            line-height: 40px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #f8f9fa;
+            cursor: pointer;
+        }
+        .grid div.fixed {
+            background: #ddd;
+            color: #555;
+            cursor: not-allowed;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .button-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button-container button:hover {
+            background-color: #007bff;
+            color: #fff;
+        }
+        #timer {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        select {
+            padding: 5px 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>数独游戏</h1>
+    <select id="difficulty" onchange="startNewGame()">
+        <option value="easy">简单</option>
+        <option value="medium">中等</option>
+        <option value="hard">困难</option>
+    </select>
+    <div id="timer">剩余时间: 10:00</div>
+    <div class="grid" id="sudoku-grid"></div>
+    <div class="button-container">
+        <button onclick="giveHint()">提示</button>
+        <button onclick="resetGame()">重置</button>
+        <button onclick="checkSolution()">检查</button>
+    </div>
+</div>
+
+<script>
+// 全局变量
+let grid = [];
+let solutionGrid = [];
+let initialBoard = [];
+let timerInterval;
+let timeLeft;
+let board;
+let difficulty = 'easy';
+let selectedCell = null;
+
+// 初始化游戏
+function startNewGame() {
+    difficulty = document.getElementById('difficulty').value;
+    timeLeft = difficulty === 'easy' ? 600 : difficulty === 'medium' ? 450 : 300;
+    document.getElementById('timer').textContent = `剩余时间: ${formatTime(timeLeft)}`;
+    clearInterval(timerInterval);
+    startTimer();
+    generateSudokuBoard();
+}
+
+// 生成数独谜题
+function generateSudokuBoard() {
+    board = generateCompleteBoard();
+    solutionGrid = JSON.parse(JSON.stringify(board));
+    removeNumbers(board, difficulty);
+    initialBoard = JSON.parse(JSON.stringify(board));
+    renderBoard();
+}
+
+// 渲染数独
+function renderBoard() {
+    const gridContainer = document.getElementById('sudoku-grid');
+    gridContainer.innerHTML = '';
+    grid = [];
+    for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+            const cell = document.createElement('div');
+            cell.textContent = board[i][j] !== 0 ? board[i][j] : '';
+            cell.className = board[i][j] !== 0 ? 'fixed' : '';
+            cell.dataset.row = i;
+            cell.dataset.col = j;
+            grid.push(cell);
+            gridContainer.appendChild(cell);
+        }
+    }
+}
+
+// 倒计时
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer').textContent = `剩余时间: ${formatTime(timeLeft)}`;
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            alert('时间到！游戏结束。');
+        }
+    }, 1000);
+}
+
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+}
+
+// 随机位置提示功能
+function giveHint() {
+    const emptyCells = grid.filter(cell => !cell.classList.contains('fixed') && cell.textContent === '');
+    if (emptyCells.length === 0) {
+        alert('没有更多空格可提供提示！');
+        return;
+    }
+    const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    const row = randomCell.dataset.row;
+    const col = randomCell.dataset.col;
+    randomCell.textContent = solutionGrid[row][col];
+    randomCell.classList.add('fixed');
+    board[row][col] = solutionGrid[row][col];
+}
+
+// 重置功能
+function resetGame() {
+    board = JSON.parse(JSON.stringify(initialBoard));
+    renderBoard();
+}
+
+// 数独生成逻辑
+function generateCompleteBoard() {
+    const board = Array.from({ length: 9 }, () => Array(9).fill(0));
+    fillBoard(board);
+    return board;
+}
+
+function fillBoard(board) {
+    const emptyCell = findEmptyCell(board);
+    if (!emptyCell) return true;
+    const [row, col] = emptyCell;
+
+    const numbers = shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    for (const num of numbers) {
+        if (isValidNumber(board, row, col, num)) {
+            board[row][col] = num;
+            if (fillBoard(board)) return true;
+            board[row][col] = 0;
+        }
+    }
+    return false;
+}
+
+function findEmptyCell(board) {
+    for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+            if (board[i][j] === 0) return [i, j];
+        }
+    }
+    return null;
+}
+
+function isValidNumber(board, row, col, num) {
+    for (let i = 0; i < 9; i++) {
+        if (board[row][i] === num || board[i][col] === num || board[Math.floor(row / 3) * 3 + Math.floor(i / 3)][Math.floor(col / 3) * 3 + (i % 3)] === num) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function removeNumbers(board, difficulty) {
+    let attempts = difficulty === 'easy' ? 30 : difficulty === 'medium' ? 40 : 50;
+    while (attempts > 0) {
+        const row = Math.floor(Math.random() * 9);
+        const col = Math.floor(Math.random() * 9);
+        if (board[row][col] !== 0) {
+            board[row][col] = 0;
+            attempts--;
+        }
+    }
+}
+
+startNewGame();
+</script>
+
+</body>
+</html>

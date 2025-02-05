@@ -1,0 +1,98 @@
+body {
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+.game-container {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    position: relative;
+}
+h1 {
+    margin: 0 0 20px;
+    color: #333;
+}
+.grid {
+    display: grid;
+    grid-template-columns: repeat(9, 40px);
+    grid-gap: 2px;
+    margin: 20px 0;
+}
+.grid div {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    font-size: 18px;
+    line-height: 40px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #f8f9fa;
+    cursor: pointer;
+}
+.grid div.fixed {
+    background: #ddd;
+    color: #555;
+    cursor: not-allowed;
+}
+.number-selector {
+    display: none;
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    grid-template-columns: repeat(3, 40px);
+    gap: 5px;
+    z-index: 1000;
+}
+.number-selector div {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    font-size: 18px;
+    line-height: 40px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #f8f9fa;
+    cursor: pointer;
+}
+.number-selector div:hover {
+    background: #007bff;
+    color: #fff;
+}
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+.button-container button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.button-container button:hover {
+    background-color: #007bff;
+    color: #fff;
+}
+#timer {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 10px;
+}
+select {
+    padding: 5px 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}

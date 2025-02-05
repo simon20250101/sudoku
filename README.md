@@ -1,2 +1,2 @@
 # sudoku
-数独游戏
+simon的数独游戏
